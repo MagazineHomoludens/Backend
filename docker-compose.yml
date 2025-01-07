@@ -7,9 +7,7 @@ services:
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
     environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
       SERVER_PORT: ${SERVER_PORT}
-    secrets:
-      - db_url
-      - db_username
-      - db_password
-      - server_port
