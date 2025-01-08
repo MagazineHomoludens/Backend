@@ -64,7 +64,11 @@ pipeline {
                     usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')
                 ]) {
                     sh '''
-                    ssh -t -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} << 'ENDSSH'
+                    # 🔑 Docker Hub 로그인 (Jenkins 서버에서 수행)
+                    echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
+
+                    # 🚀 SSH로 운영 서버에 접속
+                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} << 'ENDSSH'
                     set -e
 
                     # 📥 docker-compose.yml 다운로드
@@ -73,14 +77,14 @@ pipeline {
                     curl -o docker-compose.yml https://raw.githubusercontent.com/MagazineHomoludens/Backend/main/docker-compose-prod.yml
 
                     # 🐳 Docker 이미지 Pull 및 서비스 재시작
-                    echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
-                    docker compose -f docker-compose-prod.yml pull backend
-                    docker compose -f docker-compose-prod.yml up -d backend
+                    docker compose -f docker-compose.yml pull backend
+                    docker compose -f docker-compose.yml up -d backend
                     ENDSSH
                     '''
                 }
             }
         }
+
     }
 
     post {
