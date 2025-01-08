@@ -9,9 +9,6 @@ pipeline {
         DB_PASSWORD = credentials('db_password')
         SERVER_PORT = credentials('server_port')
         PROD_SERVER_IP = credentials('prod-server-ip')
-
-
-
     }
 
     stages {
@@ -36,8 +33,8 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
                     sh '''
                     echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
-                    docker compose build  # docker compose를 사용해 이미지 빌드
-                    docker compose push  # 이미지를 Docker Hub로 푸시
+                    docker compose build
+                    docker compose push
                     '''
                 }
             }
@@ -50,8 +47,8 @@ pipeline {
             steps {
                 echo '🚀 [CD] 개발 서버 배포 시작...'
                 sh '''
-                docker compose pull  # 이미지를 Docker Hub에서 가져오기
-                docker compose up -d  # 컨테이너 실행
+                docker compose pull
+                docker compose up -d
                 '''
             }
         }
@@ -67,10 +64,10 @@ pipeline {
                     usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')
                 ]) {
                     sh '''
-                    ssh -T -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
+                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
                     echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
-                    docker compose pull # 이미지를 Docker Hub에서 가져오기
-                    docker compose up -d # 컨테이너 실행
+                    docker compose pull
+                    docker compose up -d
                     EOF
                     '''
                 }
