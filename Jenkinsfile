@@ -68,7 +68,7 @@ pipeline {
                     echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
 
                     # 🚀 SSH로 운영 서버에 환경 변수 전달 및 배포
-                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
+                    ssh -t -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
                     set -e
 
                     # 🛠️ 환경 변수 설정
