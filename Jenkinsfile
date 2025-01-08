@@ -4,6 +4,14 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'homoludensmz/homoludens-backend'
         DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+        DB_URL = credentials('db_url')
+        DB_USERNAME = credentials('db_username')
+        DB_PASSWORD = credentials('db_password')
+        SERVER_PORT = credentials('server_port')
+        PROD_SERVER_IP = credentials('prod-server-ip')
+
+
+
     }
 
     stages {
