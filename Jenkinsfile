@@ -66,14 +66,16 @@ pipeline {
                     sh '''
                     echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
 
-                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
+                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<-'EOF'
                     set -e
 
-                    export DOCKER_TAG="${DOCKER_TAG}"
-                    export DB_URL="${DB_URL}"
-                    export DB_USERNAME="${DB_USERNAME}"
-                    export DB_PASSWORD="${DB_PASSWORD}"
-                    export SERVER_PORT="${SERVER_PORT}"
+                    export DOCKER_TAG="${env.DOCKER_TAG}"
+                    export DB_URL="${env.DB_URL}"
+                    export DB_USERNAME="${env.DB_USERNAME}"
+                    export DB_PASSWORD="${env.DB_PASSWORD}"
+                    export SERVER_PORT="${env.SERVER_PORT}"
+
+                    echo SERVER_PORT="${env.SERVER_PORT}"
 
                     # 📥 docker-compose.yml 다운로드
                     mkdir -p /home/ubuntu/backend
@@ -83,7 +85,7 @@ pipeline {
                     docker compose -f docker-compose.yml pull backend
                     docker compose -f docker-compose.yml up -d backend
                     docker image prune -a -f
-                    
+                    EOF
                     '''
                 }
             }
