@@ -64,26 +64,28 @@ pipeline {
                     usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')
                 ]) {
                 sh '''
+                # Docker Hub 로그인 (Jenkins 서버에서 수행)
                 echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
 
-                ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
-                set -e
-
-                export DOCKER_TAG="${DOCKER_TAG}"
-                export DB_URL="${DB_URL}"
-                export DB_USERNAME="${DB_USERNAME}"
-                export DB_PASSWORD="${DB_PASSWORD}"
-                export SERVER_PORT="${SERVER_PORT}"
-
-                # 📥 docker-compose.yml 다운로드
-                mkdir -p /home/ubuntu/backend
-                cd /home/ubuntu/backend
-                curl -o docker-compose.yml https://raw.githubusercontent.com/MagazineHomoludens/Backend/main/docker-compose-prod.yml
-
-                docker compose -f docker-compose.yml pull backend
-                docker compose -f docker-compose.yml up -d backend
-                docker image prune -a -f
-                EOF
+                # SSH로 운영 서버에 환경 변수 전달 및 배포
+                ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} "set -e && \
+                export DOCKER_TAG=${DOCKER_TAG} && \
+                export DB_URL=${DB_URL} && \
+                export DB_USERNAME=${DB_USERNAME} && \
+                export DB_PASSWORD=${DB_PASSWORD} && \
+                export SERVER_PORT=${SERVER_PORT} && \
+                mkdir -p /home/ubuntu/backend && \
+                cd /home/ubuntu/backend && \
+                curl -o docker-compose.yml https://raw.githubusercontent.com/MagazineHomoludens/Backend/main/docker-compose-prod.yml && \
+                echo '✅ 환경 변수 설정 확인:' && \
+                echo DOCKER_TAG=${DOCKER_TAG} && \
+                echo DB_URL=${DB_URL} && \
+                echo DB_USERNAME=${DB_USERNAME} && \
+                echo DB_PASSWORD=${DB_PASSWORD} && \
+                echo SERVER_PORT=${SERVER_PORT} && \
+                docker compose -f docker-compose.yml pull backend && \
+                docker compose -f docker-compose.yml up -d backend && \
+                docker image prune -a -f"
                 '''
                 }
             }
