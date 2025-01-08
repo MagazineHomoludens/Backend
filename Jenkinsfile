@@ -77,21 +77,19 @@ pipeline {
                     curl -o docker-compose.yml https://raw.githubusercontent.com/MagazineHomoludens/Backend/main/docker-compose-prod.yml
 
                     # 🐳 환경 변수 설정 및 Docker Compose 실행
-                    export DOCKER_TAG="${DOCKER_TAG}"
-                    export DB_URL="${DB_URL}"
-                    export DB_USERNAME="${DB_USERNAME}"
-                    export DB_PASSWORD="${DB_PASSWORD}"
-                    export SERVER_PORT="${SERVER_PORT}"
+                    env DOCKER_TAG="${DOCKER_TAG}" \
+                        DB_URL="${DB_URL}" \
+                        DB_USERNAME="${DB_USERNAME}" \
+                        DB_PASSWORD="${DB_PASSWORD}" \
+                        SERVER_PORT="${SERVER_PORT}" \
+                        docker compose -f docker-compose.yml pull backend
 
-                    echo "DOCKER_TAG=${DOCKER_TAG}"
-                    echo "DB_URL=${DB_URL}"
-                    echo "DB_USERNAME=${DB_USERNAME}"
-                    echo "DB_PASSWORD=${DB_PASSWORD}"
-                    echo "SERVER_PORT=${SERVER_PORT}"
-
-                    # 🐳 Docker 이미지 Pull 및 서비스 재시작
-                    docker compose -f docker-compose.yml pull backend
-                    docker compose -f docker-compose.yml up -d backend
+                    env DOCKER_TAG="${DOCKER_TAG}" \
+                        DB_URL="${DB_URL}" \
+                        DB_USERNAME="${DB_USERNAME}" \
+                        DB_PASSWORD="${DB_PASSWORD}" \
+                        SERVER_PORT="${SERVER_PORT}" \
+                        docker compose -f docker-compose.yml up -d backend
                     ENDSSH
                     '''
                 }
