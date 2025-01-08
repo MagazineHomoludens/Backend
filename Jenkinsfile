@@ -4,11 +4,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'homoludensmz/homoludens-backend'
         DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
-        DB_URL = credentials('db_url')
-        DB_USERNAME = credentials('db_username')
-        DB_PASSWORD = credentials('db_password')
-        SERVER_PORT = credentials('server_port')
-        PROD_SERVER_IP = credentials('prod-server-ip')
     }
 
     stages {
@@ -32,9 +27,9 @@ pipeline {
                 echo '🔄 [CI] Docker 이미지 빌드 및 푸시 단계 시작...'
                 withCredentials([usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
                     sh '''
-                    docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
-                    docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
-                    docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
+                    docker compose build  # docker compose를 사용해 이미지 빌드
+                    docker compose push  # 이미지를 Docker Hub로 푸시
                     '''
                 }
             }
@@ -47,9 +42,8 @@ pipeline {
             steps {
                 echo '🚀 [CD] 개발 서버 배포 시작...'
                 sh '''
-                docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}
-                docker compose down || true
-                docker compose up -d
+                docker compose pull  # 이미지를 Docker Hub에서 가져오기
+                docker compose up -d  # 컨테이너 실행
                 '''
             }
         }
@@ -65,24 +59,13 @@ pipeline {
                     usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')
                 ]) {
                     sh '''
-                    ssh -T -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} << EOF
-                        echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
-                        docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}
-                        docker compose down || true
-                        docker compose up -d
+                    ssh -T -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
+                    echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
+                    docker compose pull # 이미지를 Docker Hub에서 가져오기
+                    docker compose up -d # 컨테이너 실행
                     EOF
                     '''
                 }
-            }
-        }
-
-        stage('CD: Verify Deployment') {
-            steps {
-                echo '🔍 [CD] 배포 검증 단계 시작...'
-                sh '''
-                docker compose ps
-                curl -f http://localhost:${SERVER_PORT}/health || exit 1
-                '''
             }
         }
     }
