@@ -65,7 +65,7 @@ pipeline {
                     usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')
                 ]) {
                     sh '''
-                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} << 'EOF'
+                    ssh -T -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} << 'EOF'
                         docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
                         docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}
                         docker compose down || true
