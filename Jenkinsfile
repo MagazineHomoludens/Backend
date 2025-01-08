@@ -64,7 +64,7 @@ pipeline {
                     usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')
                 ]) {
                     sh '''
-                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} << 'ENDSSH'
+                    ssh -t -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} << 'ENDSSH'
                     set -e
 
                     # 📥 docker-compose.yml 다운로드
