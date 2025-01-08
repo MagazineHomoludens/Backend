@@ -64,14 +64,14 @@ pipeline {
                     usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')
                 ]) {
                     sh '''
-                    # 🔑 Docker Hub 로그인 (Jenkins 서버에서 수행)
+                    # Docker Hub 로그인 (Jenkins 서버에서 수행)
                     echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
 
-                    # 🚀 SSH로 운영 서버에 환경 변수 전달 및 배포
-                    ssh -t -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
+                    # SSH로 운영 서버에 환경 변수 전달 및 배포
+                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<_EOF
                     set -e
 
-                    # 🛠️ 환경 변수 설정
+                    # 환경 변수 설정
                     export DOCKER_TAG="${DOCKER_TAG}"
                     export DB_URL="${DB_URL}"
                     export DB_USERNAME="${DB_USERNAME}"
@@ -93,8 +93,7 @@ pipeline {
                     # 🐳 Docker Compose 실행
                     docker compose -f docker-compose.yml pull backend
                     docker compose -f docker-compose.yml up -d backend
-
-                    EOF
+                    _EOF
                     '''
                 }
             }
