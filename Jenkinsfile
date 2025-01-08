@@ -83,6 +83,12 @@ pipeline {
                     export DB_PASSWORD="${DB_PASSWORD}"
                     export SERVER_PORT="${SERVER_PORT}"
 
+                    echo "DOCKER_TAG=${DOCKER_TAG}"
+                    echo "DB_URL=${DB_URL}"
+                    echo "DB_USERNAME=${DB_USERNAME}"
+                    echo "DB_PASSWORD=${DB_PASSWORD}"
+                    echo "SERVER_PORT=${SERVER_PORT}"
+
                     # 🐳 Docker 이미지 Pull 및 서비스 재시작
                     docker compose -f docker-compose.yml pull backend
                     docker compose -f docker-compose.yml up -d backend
