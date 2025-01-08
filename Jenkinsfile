@@ -2,11 +2,14 @@ pipeline {
     agent any
 
     environment {
+        // 공통 환경 변수
         DB_URL = credentials('db_url')
         DB_USERNAME = credentials('db_username')
         DB_PASSWORD = credentials('db_password')
         SERVER_PORT = credentials('server_port')
-        PROD_SERVER_IP = credentials('prod-server-ip') // Credentials로 IP 참조
+
+        // 운영 서버 환경 변수
+        PROD_SERVER_IP = credentials('prod-server-ip')
     }
 
     stages {
@@ -29,8 +32,24 @@ pipeline {
             steps {
                 echo '🔄 [CI] Docker 이미지 빌드 단계 시작...'
                 sh '''
-                docker compose down || true
-                docker compose build
+                docker-compose down || true
+                docker-compose build
+                '''
+            }
+        }
+
+        stage('CD: Deploy to Development Server') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                echo '🚀 [CD] 개발 서버(로컬) 배포 시작...'
+                sh '''
+                echo "[CD] Docker Compose Down (If Running)"
+                docker-compose down || true
+
+                echo "[CD] Docker Compose Up"
+                docker-compose up -d
                 '''
             }
         }
@@ -41,14 +60,14 @@ pipeline {
             }
             steps {
                 echo '🚀 [CD] 운영 서버 배포 시작...'
-                withCredentials([sshUserPrivateKey(credentialsId: 'prod-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'prod-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@${PROD_SERVER_IP} << 'EOF'
-                        cd /path/to/project
+                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} << 'EOF'
+                        cd /home/ubuntu/production
                         git pull origin main
-                        docker compose down || true
-                        docker compose build
-                        docker compose up -d
+                        docker-compose down || true
+                        docker-compose build
+                        docker-compose up -d
                     EOF
                     '''
                 }
