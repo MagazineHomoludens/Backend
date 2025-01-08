@@ -68,7 +68,7 @@ pipeline {
                     echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
 
                     # SSH로 운영 서버에 환경 변수 전달 및 배포
-                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<_EOF
+                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<-EOF
                     set -e
 
                     # 환경 변수 설정
@@ -93,7 +93,8 @@ pipeline {
                     # 🐳 Docker Compose 실행
                     docker compose -f docker-compose.yml pull backend
                     docker compose -f docker-compose.yml up -d backend
-                    _EOF
+                    docker image prune -a -f
+                    EOF
                     '''
                 }
             }
