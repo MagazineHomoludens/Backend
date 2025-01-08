@@ -64,11 +64,19 @@ pipeline {
                     usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')
                 ]) {
                     sh '''
-                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
+                    ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} << 'ENDSSH'
+                    set -e
+
+                    # 📥 docker-compose.yml 다운로드
+                    mkdir -p /home/ubuntu/backend
+                    cd /home/ubuntu/backend
+                    curl -o docker-compose.yml https://raw.githubusercontent.com/MagazineHomoludens/Backend/main/docker-compose-prod.yml
+
+                    # 🐳 Docker 이미지 Pull 및 서비스 재시작
                     echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
-                    docker compose pull backend
-                    docker compose up -d backend
-                    EOF
+                    docker compose -f docker-compose-prod.yml pull backend
+                    docker compose -f docker-compose-prod.yml up -d backend
+                    ENDSSH
                     '''
                 }
             }
