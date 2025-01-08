@@ -23,7 +23,7 @@ pipeline {
             steps {
                 echo '🔄 [CI] Gradle 빌드 단계 시작...'
                 sh 'chmod +x ./gradlew'
-                sh './gradlew build'
+                sh './gradlew clean build'
             }
         }
 
