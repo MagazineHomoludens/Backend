@@ -1,13 +1,15 @@
 services:
   backend:
+    image: homoludensmz/homoludens-backend:${DOCKER_TAG}
     build:
       context: .
       dockerfile: Dockerfile
     container_name: backend-container
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      - "${SERVER_PORT:-8090}:${SERVER_PORT:-8090}"
     environment:
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       SERVER_PORT: ${SERVER_PORT}
+    restart: unless-stopped

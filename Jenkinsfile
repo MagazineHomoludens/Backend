@@ -33,8 +33,8 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker_hub_credentials', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
                     sh '''
                     echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
-                    docker compose build
-                    docker compose push
+                    docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                    docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
                     '''
                 }
             }
@@ -47,8 +47,8 @@ pipeline {
             steps {
                 echo '🚀 [CD] 개발 서버 배포 시작...'
                 sh '''
-                docker compose pull
-                docker compose up -d
+                docker compose pull backend
+                docker compose up -d backend
                 '''
             }
         }
@@ -66,8 +66,8 @@ pipeline {
                     sh '''
                     ssh -i $SSH_KEY $SSH_USER@${PROD_SERVER_IP} <<EOF
                     echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
-                    docker compose pull
-                    docker compose up -d
+                    docker compose pull backend
+                    docker compose up -d backend
                     EOF
                     '''
                 }
